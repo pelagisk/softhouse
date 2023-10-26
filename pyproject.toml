@@ -6,8 +6,10 @@ authors = ["Axel Gagge <axel.gagge@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.13"
 fastapi = "^0.104.0"
+watchdog = "^3.0.0"
+pandas = "^2.1.1"
 
 
 [build-system]
