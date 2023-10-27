@@ -30,12 +30,12 @@ def find_best_stocks_brute_force(n=3):
         # latest price
         latest_price = updates.price.iloc[-1]
 
-        # all updates within last 24 hours
+        # all updates before last 24 hours
         updates_before = updates[now - updates.date > delta]
 
-        # if all updates are made before today, this condition is true
-        # it follows that no updates were made within 24 hours so the stock has 0% change
+        # if all updates are made before last 24 hours, this condition is true        
         if len(updates_before) == len(df):
+            # it follows that no updates were made within 24 hours so the stock has 0% change
             percentage_increase = 0.0               
         else:  # otherwise, calculate the change
             old_price = updates_before.price.iloc[-1]
