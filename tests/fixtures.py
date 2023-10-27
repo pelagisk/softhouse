@@ -33,6 +33,9 @@ def generate_simple_input():
     with open("in.csv", "w") as file:
         file.writelines(test_content)
     
+    # teardown?
+    # yield 
+    # remove file
 
 @pytest.fixture()
 def simple_output():  
