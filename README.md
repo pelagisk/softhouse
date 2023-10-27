@@ -26,10 +26,10 @@
 
 # Approximation level 0
 
-- Detect when file is updated
-- Read CSV input file using pandas
-- Query using pandas
-- Return as JSON
+- [x] Read CSV input file using pandas
+- [x] Query using pandas
+- [ ] FastAPI, return JSON
+- [ ] Detect when file is updated and reload
 
 # Ideas
 - FastAPI
