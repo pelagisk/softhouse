@@ -5,8 +5,6 @@ import pytest
 @pytest.fixture()
 def generate_simple_input():    
 
-    # def generate_content():
-
     test_content = \
 """Date;Kod;Kurs
 2017-01-01 12:00:00;ABB;217
@@ -34,8 +32,6 @@ def generate_simple_input():
 
     with open("in.csv", "w") as file:
         file.writelines(test_content)
-
-    # yield generate_content  # TODO is yield needed?
     
 
 @pytest.fixture()
