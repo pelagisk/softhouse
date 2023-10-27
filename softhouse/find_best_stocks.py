@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 
-def date_converter(s):
+def date_converter(s: str):
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
 
 
@@ -53,7 +53,7 @@ def find_best_stocks_brute_force(n=3):
         winners.append({
             "rank": i + 1,
             "name": name,
-            "percent": percent, 
+            "percent": round(percent, 2), 
             "latest": latest,
         })
     return {"winners": winners}
