@@ -1,3 +1,4 @@
+import os
 from math import isclose
 import pytest
 
@@ -33,9 +34,9 @@ def generate_simple_input():
     with open("in.csv", "w") as file:
         file.writelines(test_content)
     
-    # teardown?
-    # yield 
-    # remove file
+    # teardown
+    yield 
+    os.remove("in.csv")
 
 @pytest.fixture()
 def simple_output():  
