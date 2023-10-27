@@ -13,6 +13,7 @@ def find_best_stocks_brute_force(n=3):
         header=0,  # don't use the provided header
         names=["date", "code", "price"],  # instead use this one
         sep=";", 
+        # dtype={"code": str, "price": int},
         converters={"date": date_converter},  # convert to date object
     )
 
@@ -28,7 +29,8 @@ def find_best_stocks_brute_force(n=3):
         updates = all_updates[all_updates.code == code]
 
         # latest price
-        latest_price = updates.price.iloc[-1]
+        # have to convert since FastAPI can't process numpy ints
+        latest_price = int(updates.price.iloc[-1])  
 
         # all updates before last 24 hours
         updates_before = updates[now - updates.date > delta]
