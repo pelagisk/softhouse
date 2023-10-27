@@ -28,7 +28,7 @@
 
 - [x] Read CSV input file using pandas
 - [x] Query using pandas
-- [ ] FastAPI, return JSON
+- [x] FastAPI, return JSON
 - [ ] Detect when file is updated and reload
 
 # Ideas
