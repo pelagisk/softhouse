@@ -37,3 +37,4 @@
 - os.stat
 - watchdog
 - https://file-read-backwards.readthedocs.io/en/latest/readme.html
+- create a service for testing which updates the input file regularly with mock data
