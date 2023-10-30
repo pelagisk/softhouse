@@ -29,16 +29,13 @@
 - [x] Read CSV input file using pandas
 - [x] Query using pandas
 - [x] FastAPI, return JSON
-- [ ] Save the winners in a variable that is updated by a service
+- [x] Save the winners in a variable that is updated by a service
 
-# Ideas
-- FastAPI
-- Pandas
-- os.stat
-- watchdog
-- https://file-read-backwards.readthedocs.io/en/latest/readme.html
-- create a service for testing which updates the input file regularly with mock data
+# TODOs
 
+- [ ] Logging
+- [ ] API testing
+- [ ] Profiling - find bottlenecks
 
 # Installation
 
@@ -61,4 +58,3 @@ On localhost, run
 ```bash
 poetry run uvicorn softhouse:app
 ```
-
