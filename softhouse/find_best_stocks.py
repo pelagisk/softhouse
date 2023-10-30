@@ -6,11 +6,11 @@ def date_converter(s: str):
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
 
 
-def find_best_stocks_brute_force(n=3):
+def find_best_stocks_brute_force(path, n=3):
     """A brute force solution to finding the best stocks"""
 
     try:
-        all_updates = pd.read_csv("in.csv", 
+        all_updates = pd.read_csv(path, 
             header=0,  # don't use the provided header
             names=["date", "code", "price"],  # instead use this one
             sep=";", 
