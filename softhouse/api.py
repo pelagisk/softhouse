@@ -1,7 +1,5 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 from .find_best_stocks import find_best_stocks_brute_force
 from .watch import create_observer
@@ -17,7 +15,7 @@ def update_best_stocks():
     best_stocks = find_best_stocks_brute_force()    
 
 # input file `in.csv` is watched for changes
-observer = create_observer("in.csv", lambda event: update_best_stocks())
+observer = create_observer("in/in.csv", lambda event: update_best_stocks())
 
 # lifespan of FastAPI app is the following
 @asynccontextmanager

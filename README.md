@@ -39,22 +39,18 @@
 
 # Installation
 
-For dependency management, install [Python Poetry](https://python-poetry.org) through
+This software is still in development.
+
+To install, create a virtual environment and install dependencies. 
 
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+python3.8 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-Then to install dependencies, from the project root run
+and then run it using:
 
 ```bash
-poetry install
-```
-
-# Usage
-
-On localhost, run
-
-```bash
-poetry run uvicorn softhouse:app
+uvicorn softhouse:app
 ```
