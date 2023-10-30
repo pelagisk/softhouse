@@ -38,3 +38,27 @@
 - watchdog
 - https://file-read-backwards.readthedocs.io/en/latest/readme.html
 - create a service for testing which updates the input file regularly with mock data
+
+
+# Installation
+
+For dependency management, install [Python Poetry](https://python-poetry.org) through
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+Then to install dependencies, from the project root run
+
+```bash
+poetry install
+```
+
+# Usage
+
+On localhost, run
+
+```bash
+poetry run uvicorn softhouse:app
+```
+
