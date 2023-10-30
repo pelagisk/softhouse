@@ -14,7 +14,7 @@
         - Datum: datetime - the time at which the update was sent
         - Kod: string - code/name of the stock
         - Kurs: int - stock price
-
+- Input can be modified while running
 - Output: JSON
     - list of three
     - fields:
@@ -29,7 +29,7 @@
 - [x] Read CSV input file using pandas
 - [x] Query using pandas
 - [x] FastAPI, return JSON
-- [ ] Detect when file is updated and reload
+- [ ] Save the winners in a variable that is updated by a service
 
 # Ideas
 - FastAPI
