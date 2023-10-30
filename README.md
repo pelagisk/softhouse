@@ -33,9 +33,8 @@
 
 # TODOs
 
-- [ ] API testing with the new structure of a global variable
+- [ ] API testing now broken - needs to be fixed
 - [ ] Logging
-
 - [ ] Profiling - find bottlenecks
 
 # Installation

@@ -3,6 +3,10 @@ from watchdog.events import FileSystemEventHandler
 
 
 def create_observer(filename, fun):
+    """
+    Creates an observer which watches for changes in directory of `filename` 
+    and runs the function `fun` whenever an update is detected.
+    """    
 
     class Event(FileSystemEventHandler):
         def dispatch(self, event):            

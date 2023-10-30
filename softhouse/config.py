@@ -1,0 +1,1 @@
+PATH_TO_INPUT = "in/in.csv"

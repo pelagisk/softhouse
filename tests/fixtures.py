@@ -2,6 +2,10 @@ import os
 from math import isclose
 import pytest
 
+from softhouse.config import PATH_TO_INPUT
+from softhouse.api import update_best_stocks
+from softhouse.watch import create_observer
+
 
 @pytest.fixture()
 def generate_simple_input():    
@@ -31,12 +35,12 @@ def generate_simple_input():
 2017-01-02 12:03:09;NCC;121
     """
 
-    with open("in.csv", "w") as file:
+    with open(PATH_TO_INPUT, "w") as file:
         file.writelines(test_content)
     
     # teardown
     yield 
-    os.remove("in.csv")
+    os.remove(PATH_TO_INPUT)
 
 @pytest.fixture()
 def simple_output():  
@@ -58,3 +62,10 @@ def assert_output_equal(actual, expected, rel_tol=1e-9):
             assert(test_stock[key] == expected_stock[key])
         # float almost-equality
         assert(isclose(test_stock['percent'], expected_stock['percent'], rel_tol=rel_tol))
+
+@pytest.fixture()
+def setup_api():
+    update_best_stocks()
+    observer = create_observer(PATH_TO_INPUT, lambda event: update_best_stocks())
+    yield
+    observer.stop()
