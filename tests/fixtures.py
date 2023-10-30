@@ -8,7 +8,8 @@ from softhouse.watch import create_observer
 
 
 @pytest.fixture()
-def generate_simple_input():    
+def generate_simple_input(): 
+    """Writes simple input data to file and deletes it afterwards."""   
 
     test_content = \
 """Date;Kod;Kurs
@@ -44,6 +45,7 @@ def generate_simple_input():
 
 @pytest.fixture()
 def simple_output():  
+    """Creates the expected output data in the simplest case"""
     return {
         "winners": [
             {'rank': 1, 'name': 'AddLife B', 'percent': 40.74, 'latest': 38}, 
@@ -63,8 +65,10 @@ def assert_output_equal(actual, expected, rel_tol=1e-9):
         # float almost-equality
         assert(isclose(test_stock['percent'], expected_stock['percent'], rel_tol=rel_tol))
 
+
 @pytest.fixture()
 def setup_api():
+    """Sets up the API for testing since the lifespan function does not work in this case."""
     update_best_stocks()
     observer = create_observer(PATH_TO_INPUT, lambda event: update_best_stocks())
     yield
