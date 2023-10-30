@@ -54,3 +54,9 @@ and then run it using:
 ```bash
 uvicorn softhouse:app
 ```
+
+The software can be tested by running: 
+
+```bash
+py.test
+```
