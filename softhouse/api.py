@@ -6,7 +6,7 @@ from watchdog.events import FileSystemEventHandler
 
 
 from .find_best_stocks import find_best_stocks_brute_force
-from .event import create_observer
+from .watch import create_observer
 
 
 global winners 
