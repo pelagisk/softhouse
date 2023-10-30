@@ -6,6 +6,7 @@ from softhouse.api import app
 
 
 def test_root(setup_api, generate_simple_input, simple_output):    
+    """Tests the API with simple input data."""
     client = TestClient(app)
     response = client.get("/")
     assert response.status_code == 200
