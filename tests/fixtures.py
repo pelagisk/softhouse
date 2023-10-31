@@ -22,6 +22,7 @@ def generate_zeroline_input():
     yield 
     os.remove(PATH_TO_INPUT)
 
+
 @pytest.fixture()
 def zeroline_expected_output():  
     """Creates the expected output data in the zeroline case"""
@@ -47,6 +48,7 @@ def generate_twoline_input():
     # teardown
     yield 
     os.remove(PATH_TO_INPUT)
+
 
 @pytest.fixture()
 def twoline_expected_output():  
@@ -94,6 +96,7 @@ def generate_multiline_input():
     # teardown
     yield 
     os.remove(PATH_TO_INPUT)
+
 
 @pytest.fixture()
 def multiline_expected_output():  

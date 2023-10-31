@@ -2,9 +2,11 @@ from datetime import datetime, timedelta
 import logging
 import pandas as pd
 
+from softhouse.config import DATE_FORMAT
+
 
 def date_converter(s: str):
-    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
+    return datetime.strptime(s, DATE_FORMAT)
 
 
 def find_winners_brute_force(path, n=3):
@@ -15,7 +17,7 @@ def find_winners_brute_force(path, n=3):
             header=0,  # don't use the provided header
             names=["date", "code", "price"],  # instead use this one
             sep=";", 
-            # dtype={"code": str, "price": int},
+            dtype={"code": str, "price": int},
             converters={"date": date_converter},  # convert to date object
         )
     except FileNotFoundError:

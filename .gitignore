@@ -1,5 +1,6 @@
 in/in.csv
 *.log
+profiling/profile.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -34,8 +34,8 @@
 # TODOs
 
 - [x] API testing
-- [ ] Logging
-- [ ] Test different inputs to find_best_stocks and handle all cases
+- [x] Logging
+- [x] Test different inputs to find_best_stocks and handle all cases
 - [ ] Profiling - find bottlenecks
 
 # Installation
