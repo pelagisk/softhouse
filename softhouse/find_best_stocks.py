@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 import pandas as pd
 
 
@@ -18,10 +19,12 @@ def find_best_stocks_brute_force(path, n=3):
             converters={"date": date_converter},  # convert to date object
         )
     except FileNotFoundError:
+        logging.warning("Input file not found: returning empty data!")
         return {"winners": []}
 
     if len(all_updates) == 0:
-        return {"winners": []}
+        logging.warning("Input file is empty: returning empty data!")
+        return {"winners": []}        
 
     # find for all labels the increase in price during last 24 hours
     now = all_updates.date.iloc[-1]
