@@ -7,7 +7,7 @@ def date_converter(s: str):
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
 
 
-def find_best_stocks_brute_force(path, n=3):
+def find_winners_brute_force(path, n=3):
     """A brute force solution to finding the best stocks"""
 
     try:
@@ -20,11 +20,11 @@ def find_best_stocks_brute_force(path, n=3):
         )
     except FileNotFoundError:
         logging.warning("Input file not found: returning empty data!")
-        return {"best_stocks": []}
+        return {"winners": []}
 
     if len(all_updates) == 0:
         logging.warning("Input file is empty: returning empty data!")
-        return {"best_stocks": []}        
+        return {"winners": []}        
 
     #  timedelta representing last 24 hours
     now = all_updates.date.iloc[-1]
@@ -33,10 +33,12 @@ def find_best_stocks_brute_force(path, n=3):
     # find for all labels the increase in price during last 24 hours
     # save it in the list stock_info
     codes = all_updates.code.unique()
+    logging.debug(all_updates)
+    logging.debug(f"Stocks to be processed: {codes}")
     stock_info = []
     for code in codes:
 
-        logging.info(f"Processing stock {code}")
+        logging.debug(f"Processing stock {code}")
         
         # updates for this stock
         updates = all_updates[all_updates.code == code]
@@ -69,12 +71,12 @@ def find_best_stocks_brute_force(path, n=3):
     stock_info = sorted(stock_info, key=(lambda line: line[1]), reverse=True)
 
     # return in the specified format
-    best_stocks = []
+    winners = []
     for i, (name, percent, latest) in enumerate(stock_info[0:n]):
-        best_stocks.append({
+        winners.append({
             "rank": i + 1,
             "name": name,
             "percent": round(percent, 2), 
             "latest": latest,
         })
-    return {"best_stocks": best_stocks}
+    return {"winners": winners}

@@ -3,13 +3,65 @@ from math import isclose
 import pytest
 
 from softhouse.config import PATH_TO_INPUT
-from softhouse.api import update_best_stocks
+from softhouse.api import update_winners
 from softhouse.watch import create_observer
 
 
 @pytest.fixture()
-def generate_simple_input(): 
-    """Writes simple input data to file and deletes it afterwards."""   
+def generate_zeroline_input(): 
+    """Writes twoline input data to file and deletes it afterwards."""   
+
+    test_content = \
+"""Date;Kod;Kurs
+    """
+
+    with open(PATH_TO_INPUT, "w") as file:
+        file.writelines(test_content)
+    
+    # teardown
+    yield 
+    os.remove(PATH_TO_INPUT)
+
+@pytest.fixture()
+def zeroline_expected_output():  
+    """Creates the expected output data in the zeroline case"""
+    return {
+        "winners": [
+        ],
+    }
+
+
+@pytest.fixture()
+def generate_twoline_input(): 
+    """Writes twoline input data to file and deletes it afterwards."""   
+
+    test_content = \
+"""Date;Kod;Kurs
+2017-01-01 12:00:00;ABB;217
+2017-01-01 12:00:01;NCC;122
+    """
+
+    with open(PATH_TO_INPUT, "w") as file:
+        file.writelines(test_content)
+    
+    # teardown
+    yield 
+    os.remove(PATH_TO_INPUT)
+
+@pytest.fixture()
+def twoline_expected_output():  
+    """Creates the expected output data in the twoline case"""
+    return {
+        "winners": [
+            {'rank': 1, 'name': 'ABB', 'percent': 0, 'latest': 217}, 
+            {'rank': 2, 'name': 'NCC', 'percent': 0, 'latest': 122}, 
+        ],
+    } 
+
+
+@pytest.fixture()
+def generate_multiline_input(): 
+    """Writes multiline input data to file and deletes it afterwards."""   
 
     test_content = \
 """Date;Kod;Kurs
@@ -44,8 +96,8 @@ def generate_simple_input():
     os.remove(PATH_TO_INPUT)
 
 @pytest.fixture()
-def simple_output():  
-    """Creates the expected output data in the simplest case"""
+def multiline_expected_output():  
+    """Creates the expected output data in the multiline case"""
     return {
         "winners": [
             {'rank': 1, 'name': 'AddLife B', 'percent': 40.74, 'latest': 38}, 
@@ -69,7 +121,7 @@ def assert_output_equal(actual, expected, rel_tol=1e-9):
 @pytest.fixture()
 def setup_api():
     """Sets up the API for testing since the lifespan function does not work in this case."""
-    update_best_stocks()
-    observer = create_observer(PATH_TO_INPUT, lambda event: update_best_stocks())
+    update_winners()
+    observer = create_observer(PATH_TO_INPUT, lambda event: update_winners())
     yield
     observer.stop()

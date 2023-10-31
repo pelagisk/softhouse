@@ -4,18 +4,18 @@ import datetime
 import logging 
 
 from .config import PATH_TO_INPUT, MODE, LOG_FILENAME
-from .find_best_stocks import find_best_stocks_brute_force
+from .winners import find_winners_brute_force
 from .watch import create_observer
 
 
-def update_best_stocks():
+def update_winners():
     """
-    `best_stocks` is a global variable which should hold our best 3 stocks. 
+    `winners` is a global variable which should hold our best 3 stocks. 
     It is updated using this function.
     """
-    logging.debug("Updating best_stocks")
-    global best_stocks    
-    best_stocks = find_best_stocks_brute_force(PATH_TO_INPUT)    
+    logging.debug("Updating winners")
+    global winners    
+    winners = find_winners_brute_force(PATH_TO_INPUT)    
 
 
 # lifespan of FastAPI app is the following
@@ -35,9 +35,9 @@ async def lifespan(app: FastAPI):
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
-    update_best_stocks()
+    update_winners()
 
-    observer = create_observer(PATH_TO_INPUT, lambda event: update_best_stocks())
+    observer = create_observer(PATH_TO_INPUT, lambda event: update_winners())
 
     yield
 
@@ -51,5 +51,5 @@ app = FastAPI(lifespan=lifespan)
 # the only route is a GET
 @app.get("/")
 def root():
-    global best_stocks
-    return best_stocks
+    global winners
+    return winners
