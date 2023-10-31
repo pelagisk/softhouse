@@ -19,6 +19,7 @@ def find_winners_brute_force(path, n=3):
             sep=";", 
             dtype={"code": str, "price": int},
             converters={"date": date_converter},  # convert to date object
+            engine="c",  # use the C engine
         )
     except FileNotFoundError:
         logging.warning("Input file not found: returning empty data!")
@@ -57,10 +58,11 @@ def find_winners_brute_force(path, n=3):
 
         # does the input file contain information about a possible change in stock price?
         if (
-            (len(updates) == 1) or                    # not if there is only a single update about the stock
-            (len(updates_before) == 0) or             # not if there is no updates before last 24 hours
+            (len(updates) == 1) or                 # not if there is only a single update about the stock
+            (len(updates_before) == 0) or          # not if there is no updates before last 24 hours
             (len(updates_before) == len(updates))  # not if there is no updates during last 24 hours
         ):
+            # then the stock is assumed to be constant in price during last 24 hours
             percentage_increase = 0.0  
         else:  # otherwise, calculate the change
             old_price = updates_before.price.iloc[-1]
