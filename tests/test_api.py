@@ -4,7 +4,6 @@ from .fixtures import *
 from softhouse.api import app
 
 
-
 def test_root(setup_api, generate_multiline_input, multiline_expected_output):    
     """Tests the API with simple input data."""
     client = TestClient(app)

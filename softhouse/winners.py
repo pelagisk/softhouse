@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 import pandas as pd
+from file_read_backwards import FileReadBackwards
 
 from softhouse.config import DATE_FORMAT
 
@@ -63,13 +64,13 @@ def find_winners_brute_force(path, n=3):
             (len(updates_before) == len(updates))  # not if there is no updates during last 24 hours
         ):
             # then the stock is assumed to be constant in price during last 24 hours
-            percentage_increase = 0.0  
+            percentages = 0.0  
         else:  # otherwise, calculate the change
             old_price = updates_before.price.iloc[-1]
             change_in_price = latest_price - old_price
-            percentage_increase = 100 * change_in_price / old_price        
+            percentages = 100 * change_in_price / old_price        
 
-        stock_info.append((code, percentage_increase, latest_price))
+        stock_info.append((code, percentages, latest_price))
 
     # sort by index 1: the stock price increase 
     stock_info = sorted(stock_info, key=(lambda line: line[1]), reverse=True)
@@ -86,46 +87,69 @@ def find_winners_brute_force(path, n=3):
     return {"winners": winners}
 
 
+def parse_line(line):
+    """Helper function that parses a line of the file"""
+    date_string, code, price_string = line.split(";")
+    date = date_converter(date_string)
+    price = int(price_string)
+    return date, code, price
+
+
+class SortedLimitedList:
+    """
+    An object representing a list of length n, sorted in descending order.    
+    """
+
+    def __init__(self, n, key):
+        self.n = n
+        self.key = key  # key function, like `sorted(..., key=key)` for a list
+        self._list = []
+
+    def len(self):
+        return len(self._list)
+    
+    def __getitem__(self, key):
+        return self._list[key]
+
+    def insert(self, element):
+
+        k = self.key(element)
+        for (i, e) in enumerate(reversed(self._list)):
+            if k <= self.key(e): 
+                index = self.len() - i
+                self._list.insert(index, element)
+                self._list = self._list[0:self.n]
+                return 
+        self._list.insert(0, element)
+        self._list = self._list[0:self.n]
+
+    def __str__(self):
+        return str(self._list)
+
+
 def find_winners_alternative(path, n=3):
     """
-    Alternative method of finding winners. 
+    Alternative method of finding winners. Reads file backwards and only
+    continues as far as it has to.
 
-    The idea is that we can calculate the winners gradually and stop when no stocks can
-    improve it.
-
-    I have not checked yet whether this is actually faster!
-    Could definitely be slower since it relies on Python and not C. 
-
-    One option is to implement this in e.g. C or Rust.
+    Should scale with number of updates/day, not number of rows in file.
+    Which solution to use depends on the case!
     """
 
-    from file_read_backwards import FileReadBackwards
+    # timedelta representing last 24 hours        
+    delta = timedelta(days=1)    
 
-    def parse_line(line):
-        date_string, code, price_string = line.split(";")
-        date = date_converter(date_string)
-        price = int(price_string)
-        return date, code, price
+    # create the candidates as a custom sorted list of max length n
+    candidates = SortedLimitedList(n=n, key=get_percentage)
+
+    # from an update (a line), gets the percentage
+    get_percentage = lambda update: update['percent']
+
+    # read file from last line backwards:
 
     lines_read = 0
-    prices = dict()    
-    percentage_increase = dict()
-
-    candidates = []
-
-    def add_to_candidates(candidate):
-        """Adds to candidates in the correct order"""
-        percentage = candidate[1]
-        for (i, (_, p, _)) in enumerate(reversed(candidates)):
-            if percentage <= p: 
-                index = len(candidates) - i
-                candidates.insert(index, candidate)
-                return candidates
-        candidates.insert(0, candidate)
-        return candidates[0:n]
-
-    #  timedelta representing last 24 hours        
-    delta = timedelta(days=1)
+    prices = dict()       # maps stock codes -> prices
+    percentages = dict()  # maps stock codes -> percentages (increase)    
 
     with FileReadBackwards(path) as frb:
 
@@ -135,6 +159,7 @@ def find_winners_alternative(path, n=3):
             if not line:
                 break
 
+            # try to parse line
             try: 
                 date, code, price = parse_line(line)
 
@@ -145,56 +170,66 @@ def find_winners_alternative(path, n=3):
                 # check if the update is older than 24 hours
                 is_older = now - date > delta
 
-                # stopping condition
+                # stopping condition:
                 least_percentage = -1000
-                if len(candidates) > 0:
-                    least_percentage = candidates[-1][1]
-                all_accounted_for = prices.keys() == percentage_increase.keys()
-                if (len(candidates) >= n) and (least_percentage >= 0) and all_accounted_for and is_older:
+                if candidates.len() > 0:
+                    least_percentage = get_percentage(candidates[-1])
+                all_accounted_for = prices.keys() == percentages.keys()
+                if (
+                    (candidates.len() >= n) and  # we have at least n candidates for winners
+                    (least_percentage >= 0) and  # candidates have increase >= 0
+                    all_accounted_for and        # all encountered codes have a percentage calculated
+                    (is_older == True)           # the date of the current line is older than 24 hours
+                ):
                     break
 
                 # if the code is encountered for the first time
-                # and update is within 24 hours
-                if not code in prices and (is_older == False): 
-                    prices[code] = price
-                # and update is older than 24 hours
-                elif not code in prices and (is_older == True):    
-                    prices[code] = price
-                    percentage_increase[code] = 0
+                if not code in prices:
 
-                    if (percentage_increase[code] >= least_percentage):
-                        candidates = add_to_candidates((
-                            code,                            
-                            percentage_increase[code],
-                            prices[code], 
-                        ))
+                    prices[code] = price                    
+
+                    # if update is older than 24 hours
+                    # calculate percentage
+                    if is_older == True:        
+                        percentages[code] = 0
+                        # add it to candidates if it qualifies
+                        if (percentages[code] >= least_percentage):
+                            candidates.insert(dict(
+                                name=code,
+                                percent=percentages[code],
+                                latest=prices[code],
+                            ))                             
 
                 # if encountered but the percentage has not been calculated yet
                 # and the current update is older than 24 hours
-                elif (not code in percentage_increase) and (is_older == True):
+                elif (not code in percentages) and (is_older == True):
+
+                    # calculate percentage
                     last_price = prices[code]
                     change_in_price = last_price - price                    
-                    percentage_increase[code] = 100 * change_in_price / price  
+                    percentages[code] = 100 * change_in_price / price  
 
-                    if percentage_increase[code] >= least_percentage:
-                        candidates = add_to_candidates((
-                            code,                            
-                            percentage_increase[code],
-                            prices[code], 
-                        ))
+                    # add it to candidates if it qualifies
+                    if percentages[code] >= least_percentage:
+                        candidates.insert(dict(
+                            name=code,
+                            percent=percentages[code],
+                            latest=prices[code],
+                        ))   
 
                 lines_read += 1
 
+            # this case occurs when parse_line fails
             except ValueError:
                 pass
 
     # return in the specified format
     winners = []
-    for i, (name, percent, latest) in enumerate(candidates):
+    for i, candidate in enumerate(candidates):
         winners.append({
             "rank": i + 1,
-            "name": name,
-            "percent": round(percent, 2), 
-            "latest": latest,
+            "name": candidate["name"],
+            "percent": round(candidate["percent"], 2), 
+            "latest": candidate["latest"],
         })
     return {"winners": winners}

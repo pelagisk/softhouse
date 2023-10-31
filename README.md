@@ -36,7 +36,8 @@
 - [x] API testing
 - [x] Logging
 - [x] Test different inputs to find_best_stocks and handle all cases
-- [ ] Profiling - find bottlenecks
+- [x] Profiling - find bottlenecks
+- [ ] Refactor - write try/except of alternative method with fewer indents
 
 # Installation
 
