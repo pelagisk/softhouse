@@ -161,9 +161,8 @@ def find_winners_alternative(path, n=3):
             if not line:
                 break
 
-            # try to parse line
-            try: 
-                # convert the line into an update (date, code, price)
+            # try to parse the line into an update (date, code, price)
+            try:                 
                 date, code, price = parse_line(line)
 
             # this case occurs when parse_line fails
