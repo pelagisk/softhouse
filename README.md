@@ -23,11 +23,16 @@
         - percent: float %.2f - the price increase during last 24 in percent (select the three stocks of largest percentual increase during the day)
         - latest: int - latest price
 
+# Ideas
+
+- Scaling is worse right now for the non-pandas solution. Is it true?
+- Need to confirm solutions for non-deterministic input
+- Create a deterministic test that looks realistic
 
 # TODOs
 
+- [x] Non-deterministic tests
 - [ ] Improved logging
-- [ ] None-deterministic tests
 - [ ] Refactor - write try/except of alternative method with fewer indents
 
 # Installation

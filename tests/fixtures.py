@@ -1,8 +1,11 @@
 import os
+from datetime import datetime, timedelta
+from random import random, randint
 from math import isclose
+import pandas as pd
 import pytest
 
-from softhouse.config import PATH_TO_INPUT
+from softhouse.config import PATH_TO_INPUT, DATE_FORMAT
 from softhouse.api import update_winners
 from softhouse.watch import create_observer
 
@@ -128,3 +131,72 @@ def setup_api():
     observer = create_observer(PATH_TO_INPUT, lambda event: update_winners())
     yield
     observer.stop()
+
+
+@pytest.fixture()
+def generate_random_input():
+    """Writes random input data to file and deletes it afterwards.    
+    """   
+
+    # stock codes
+    codes = ["NCC", "ABB", "AddLife B", "SSAB", "8TRA"]
+
+    # random last and next last prices
+    last_prices = dict((code, randint(10, 100)) for code in codes)
+    next_last_prices = dict((code, randint(10, 100)) for code in codes)
+
+    # calculated percentages
+    percentages = dict(
+        (code, (last_prices[code] - next_last_prices[code]) / next_last_prices[code]) 
+        for code in codes
+    )
+
+    # calculate winners
+    stock_info = [
+        dict(name=code, percent=100*percentages[code], latest=last_prices[code]) 
+        for code in codes
+    ]
+    stock_info = sorted(stock_info, key=(lambda stock: stock["percent"]), reverse=True)
+    winners = []
+    for i, stock in enumerate(stock_info[0:3]):
+        winners.append(dict(
+            rank = i + 1,
+            name = stock["name"],
+            percent = round(stock["percent"], 2), 
+            latest = stock["latest"],
+        ))
+    expected_output = {"winners": winners}
+
+    def _method(n_days=10, n_updates_max=10, prob=1.0):
+        updates = []
+        date = datetime(year=2023, month=10, day=1, hour=12)
+        
+        # last day, make an update for all stocks
+        for code in codes:
+            updates.append([date.strftime(DATE_FORMAT), code, last_prices[code]])
+            date -= timedelta(days=0, seconds=randint(0, 5))     
+
+        next_last_updated = set()
+
+        for i in range(n_days):
+            date -= timedelta(days=1)  # one day backwards
+            n_updates = randint(0, n_updates_max)
+            for i in range(n_updates):
+                # TODO ensure that code appears at least once
+                # select a random code
+                code = codes[randint(0, len(codes)-1)]
+                # if next last update has not been made yet for this code
+                if not code in next_last_updated: 
+                    price = next_last_prices[code]
+                    next_last_updated.add(code)
+                else:  # if it has been made, make a random update instead
+                    price = randint(10, 100)
+                updates.append([date.strftime(DATE_FORMAT), code, price])
+                date -= timedelta(days=0, seconds=randint(0, 5))
+        # put in reverse order in a dataframe                    
+        df = pd.DataFrame(updates[::-1])    
+        df.to_csv(PATH_TO_INPUT, sep=";", header=["Date", "Kod", "Kurs"], index=False)
+        return expected_output
+
+    yield _method
+    os.remove(PATH_TO_INPUT)
