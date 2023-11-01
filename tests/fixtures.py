@@ -5,7 +5,7 @@ from math import isclose
 import pandas as pd
 import pytest
 
-from softhouse.config import PATH_TO_INPUT, DATE_FORMAT
+from softhouse.config import PATH_TO_INPUT, DATE_FORMAT, LOG_FILENAME
 from softhouse.api import update_winners
 from softhouse.watch import create_observer
 
@@ -139,35 +139,39 @@ def generate_random_input():
     """   
 
     # stock codes
-    codes = ["NCC", "ABB", "AddLife B", "SSAB", "8TRA"]
-
-    # random last and next last prices
-    last_prices = dict((code, randint(10, 100)) for code in codes)
-    next_last_prices = dict((code, randint(10, 100)) for code in codes)
-
-    # calculated percentages
-    percentages = dict(
-        (code, (last_prices[code] - next_last_prices[code]) / next_last_prices[code]) 
-        for code in codes
-    )
-
-    # calculate winners
-    stock_info = [
-        dict(name=code, percent=100*percentages[code], latest=last_prices[code]) 
-        for code in codes
-    ]
-    stock_info = sorted(stock_info, key=(lambda stock: stock["percent"]), reverse=True)
-    winners = []
-    for i, stock in enumerate(stock_info[0:3]):
-        winners.append(dict(
-            rank = i + 1,
-            name = stock["name"],
-            percent = round(stock["percent"], 2), 
-            latest = stock["latest"],
-        ))
-    expected_output = {"winners": winners}
+    codes = ["NCC", "ABB", "AddLife B", "SSAB", "8TRA"]    
 
     def _method(n_days=10, n_updates_max=10, prob=1.0):
+
+        # random last and next last prices
+        # last_prices = dict((code, randint(10, 100)) for code in codes)
+        last_prices = {"NCC": 10, "ABB": 10, "AddLife B": 10, "SSAB": 10, "8TRA": 10}
+
+        # next_last_prices = dict((code, last_prices[code] + randint(3, 10)) for code in codes)  # dict((code, randint(10, 100)) for code in codes)
+        next_last_prices = {"NCC": 20, "ABB": 21, "AddLife B": 22, "SSAB": 11, "8TRA": 10}
+
+        # calculated percentages
+        percentages = dict(
+            (code, (last_prices[code] - next_last_prices[code]) / next_last_prices[code]) 
+            for code in codes
+        )
+
+        # calculate winners
+        stock_info = [
+            dict(name=code, percent=100*percentages[code], latest=last_prices[code]) 
+            for code in codes
+        ]
+        stock_info = sorted(stock_info, key=(lambda stock: stock["percent"]), reverse=True)
+        winners = []
+        for i, stock in enumerate(stock_info[0:3]):
+            winners.append(dict(
+                rank = i + 1,
+                name = stock["name"],
+                percent = round(stock["percent"], 2), 
+                latest = stock["latest"],
+            ))
+        expected_output = {"winners": winners}
+
         updates = []
         date = datetime(year=2023, month=10, day=1, hour=12)
         

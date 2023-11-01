@@ -23,21 +23,8 @@
         - percent: float %.2f - the price increase during last 24 in percent (select the three stocks of largest percentual increase during the day)
         - latest: int - latest price
 
-# Ideas
-
-- Scaling is worse right now for the non-pandas solution. Is it true?
-- Need to confirm solutions for non-deterministic input
-- Create a deterministic test that looks realistic
-
-# TODOs
-
-- [x] Non-deterministic tests
-- [ ] Improved logging
-- [x] Refactor - write try/except of alternative method with fewer indents
 
 # Installation
-
-This software is still in development.
 
 To install, create a virtual environment and install dependencies. 
 
@@ -47,14 +34,38 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-and then run it using:
+All commands below are assumed to be run inside this virtualenv. 
+
+
+# Usage
 
 ```bash
 uvicorn softhouse:app
 ```
 
-The software can be tested by running: 
+
+# Testing
+
+Run `pytest` with
 
 ```bash
 py.test
+```
+
+
+# Profiling
+
+Profile the code using `cProfile` with
+
+```bash
+python profiling/run.py > profiling/profile.txt
+```
+
+
+# Scaling test of the two methods
+
+We can compare the two solution methods by running
+
+```bash
+python profiling/plot_scaling.py
 ```

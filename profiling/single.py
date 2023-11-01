@@ -18,15 +18,11 @@ logging.basicConfig(
 )
 
 n = 100
-n_rows = generate_input(n_days=n, prob=0.8)
+n_rows = generate_input(n_days=n, prob=0.9)
 print(f"n_rows: {n_rows}")
 
-res = find_winners_alternative(PATH_TO_INPUT)
+res = find_winners_alternative(PATH_TO_INPUT, assume_update_every_day=True)
 print(res["winners"])
-
-# with open(LOG_FILENAME) as f:
-#     print(f.read())
-    
 
 # delete input file
 os.remove(PATH_TO_INPUT)

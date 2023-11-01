@@ -105,10 +105,9 @@ def parse_line(line):
     return date, code, price
 
 
-class SortedLimitedList:
+class SortedList:
     """
     An object representing a list of length n, sorted in descending order.
-    Supposed to always hold a maximum of n elements!
     """
 
     def __init__(self, n, key):
@@ -129,22 +128,25 @@ class SortedLimitedList:
             if k <= self.key(e): 
                 index = self.len() - i
                 self._list.insert(index, element)
-                self._list = self._list[0:self.n]
+                # self._list = self._list[0:self.n]
                 return 
         self._list.insert(0, element)
-        self._list = self._list[0:self.n]
+        # self._list = self._list[0:self.n]
 
     def __str__(self):
         return str(self._list)
 
 
-def find_winners_alternative(path, n=3):
+def find_winners_alternative(path, n=3, assume_update_every_day=False):
     """
     Alternative method of finding winners. Reads file backwards and only
     continues as far as it has to. 
 
     Should scale with number of updates/day, not number of rows in file.
     Which solution to use depends on the case!
+
+    If it can be assumed that all stocks update every day, we never have to 
+    search the entire file and the algorithm runs significantly faster.
     """
 
     # timedelta representing last 24 hours        
@@ -154,7 +156,7 @@ def find_winners_alternative(path, n=3):
     get_percentage = lambda update: update['percent']
 
     # create the candidates as a custom sorted list of max length n
-    candidates = SortedLimitedList(n=n, key=get_percentage)    
+    candidates = SortedList(n=n, key=get_percentage)    
 
     # read file from last line backwards:
 
@@ -191,27 +193,44 @@ def find_winners_alternative(path, n=3):
             # whether all encountered stocks/codes also have a percentage
             all_accounted_for = prices.keys() == percentages.keys()
 
-            # find the minimum percentage among candidates
+            # the percentage of candidate n in the candidate list
+            # (this will be a minimum percentage for the top three)
             min_percentage = -100
-            if candidates.len() > 0:
-                min_percentage = get_percentage(candidates[-1])
+            if candidates.len() > n:
+                min_percentage = get_percentage(candidates[n-1])
 
-            # stopping condition, the crucial speed-improvement of this 
+            # stopping conditions, the crucial speed-improvement of this 
             # algorithm:
-            # we can stop if these are true, since we are now in the file when 
+            # We can stop if these are true, since we are now in the file when 
             # all updates are older than 24 hours. So any unencountered stocks 
-            # will have 0% increase. Hence they cannot be better candidates if
-            # all three have at least 0% increase.
+            # will have 0% increase. Hence we cannot find any better candidates 
+            # if the top n candidates have at least 0% increase.
+            # If the top n candidates have < 0% increase, the code will have to
+            # read all lines!
             if (
                 # we have n candidates (or more)
                 (candidates.len() >= n) and  
                 # all encountered codes have a percentage calculated
                 all_accounted_for and   
                 # all candidates have at least 0% increase     
-                # (min_percentage >= 0) and    
+                (min_percentage >= 0) and    
                 # the date of the current line is older than 24 hours
                 (is_older == True)           
             ):
+                break
+            # If it can be assumed that all stocks update every day
+            # it is enough to assume that we have accounted for all stocks!
+            # The algorithm can then stop even if <0% increase since no new
+            # stocks can show up in the list
+            if (
+                (assume_update_every_day == True) and                
+                # we have n candidates (or more)
+                (candidates.len() >= n) and  
+                # all encountered codes have a percentage calculated
+                all_accounted_for and    
+                # the date of the current line is older than 24 hours
+                (is_older == True) 
+            ):                
                 break
 
             # if the code is encountered for the first time
@@ -233,8 +252,12 @@ def find_winners_alternative(path, n=3):
                         name=code,
                         percent=percentages[code],
                         latest=prices[code],
-                    ))                             
-
+                    ))  
+                    logging.debug("\n".join([
+                        f"        {c['name']}: {c['percent']}"
+                        for c in candidates
+                    ]))   
+                                     
             # if encountered but the percentage has not been calculated yet
             # and the current update is older than 24 hours
             elif (not code in percentages) and (is_older == True):                    
@@ -253,12 +276,16 @@ def find_winners_alternative(path, n=3):
                     percent=percentages[code],
                     latest=prices[code],
                 ))   
+                logging.debug("\n".join([
+                    f"        {c['name']}: {c['percent']}"
+                    for c in candidates
+                ]))                
 
             lines_read += 1
 
     # return in the specified format
     winners = []
-    for i, candidate in enumerate(candidates):
+    for i, candidate in enumerate(candidates[0:n]):
         winners.append({
             "rank": i + 1,
             "name": candidate["name"],
