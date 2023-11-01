@@ -1,5 +1,6 @@
 import os
 from timeit import timeit
+import numpy as np
 import matplotlib.pyplot as plt
 
 from softhouse.config import PATH_TO_INPUT
@@ -10,33 +11,46 @@ from profiling.generate import generate_input
 
 
 # check scaling of resources with input size
-iterations = 100
-n_list = [2**n for n in range(2, 8)]
+timeit_iterations = 10
+avg_iterations = 10
 
-pandas_elapsed_list = []
-alternative_elapsed_list = []
+# n_list = [10 * n for n in range(1, 5)]
+n_list = [2**n for n in range(5, 10)]
 
-n_rows_list = []
+n_avg_list = []
+pandas_avg_list = []
+pandas_std_list = []
+alternative_avg_list = []
+alternative_std_list = []
+
 for n in n_list:
-    n_rows = generate_input(n_days=n)
-    n_rows_list.append(n_rows)
 
-    t = timeit("find_winners_brute_force(PATH_TO_INPUT)", number=iterations, globals=globals())
-    pandas_elapsed_list.append(t)
-
-    t = timeit("find_winners_alternative(PATH_TO_INPUT)", number=iterations, globals=globals())
-    alternative_elapsed_list.append(t)
+    # take the average over several generated input files
+    nrl = []
+    pel = []
+    ael = []
+    for i in range(avg_iterations):
+        n_rows = generate_input(n_days=n, prob=0.8)
+        tp = timeit("find_winners_brute_force(PATH_TO_INPUT)", number=timeit_iterations, globals=globals())
+        ta = timeit("find_winners_alternative(PATH_TO_INPUT)", number=timeit_iterations, globals=globals())                
+        nrl.append(n_rows)
+        pel.append(tp)
+        ael.append(ta)
+    
+    n_avg_list.append(np.average(nrl))
+    pandas_avg_list.append(np.average(pel))
+    pandas_std_list.append(np.std(pel))
+    alternative_avg_list.append(np.average(ael))
+    alternative_std_list.append(np.std(ael))
     
 # delete input file
 os.remove(PATH_TO_INPUT)
 
 # plot results
 fig, ax = plt.subplots()
-ax.plot(n_rows_list, pandas_elapsed_list, ".-b", label="Pandas")
-ax.plot(n_rows_list, alternative_elapsed_list, ".-r", label="Alternative")
+ax.errorbar(n_avg_list, pandas_avg_list, yerr=pandas_std_list, fmt=".-b", label="Pandas")
+ax.errorbar(n_avg_list, alternative_avg_list, yerr=pandas_std_list, fmt=".-r", label="Alternative")
 ax.set_xlabel("File size")
 ax.set_ylabel("Time in seconds")
 ax.legend()
 plt.show()
-
-# clearly, the running time increases linearly with the file size

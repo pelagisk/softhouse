@@ -24,19 +24,10 @@
         - latest: int - latest price
 
 
-# Approximation level 0
-
-- [x] Read CSV input file using pandas
-- [x] Query using pandas
-- [x] FastAPI, return JSON
-- [x] Save the winners in a variable that is updated by a service
-
 # TODOs
 
-- [x] API testing
-- [x] Logging
-- [x] Test different inputs to find_best_stocks and handle all cases
-- [x] Profiling - find bottlenecks
+- [ ] Improved logging
+- [ ] None-deterministic tests
 - [ ] Refactor - write try/except of alternative method with fewer indents
 
 # Installation

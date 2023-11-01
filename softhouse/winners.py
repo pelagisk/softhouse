@@ -88,7 +88,7 @@ def find_winners_brute_force(path, n=3):
 
 
 def parse_line(line):
-    """Helper function that parses a line of the file"""
+    """Parses a line of formmat 'date;code;price' where is of format DATE_FORMAT"""
     date_string, code, price_string = line.split(";")
     date = date_converter(date_string)
     price = int(price_string)
@@ -130,7 +130,7 @@ class SortedLimitedList:
 def find_winners_alternative(path, n=3):
     """
     Alternative method of finding winners. Reads file backwards and only
-    continues as far as it has to.
+    continues as far as it has to. 
 
     Should scale with number of updates/day, not number of rows in file.
     Which solution to use depends on the case!
@@ -139,11 +139,11 @@ def find_winners_alternative(path, n=3):
     # timedelta representing last 24 hours        
     delta = timedelta(days=1)    
 
-    # create the candidates as a custom sorted list of max length n
-    candidates = SortedLimitedList(n=n, key=get_percentage)
-
     # from an update (a line), gets the percentage
     get_percentage = lambda update: update['percent']
+
+    # create the candidates as a custom sorted list of max length n
+    candidates = SortedLimitedList(n=n, key=get_percentage)    
 
     # read file from last line backwards:
 
@@ -155,29 +155,39 @@ def find_winners_alternative(path, n=3):
 
         while True:
 
+            # read lines until EOF (beginning of file :) )
             line = frb.readline()    
             if not line:
                 break
 
             # try to parse line
             try: 
+
+                # convert the line into an update (date, code, price)
                 date, code, price = parse_line(line)
 
-                # if we are on the last line, set the current datetime
+                logging.debug(f"Line {lines_read}: {date}, {code}, {price}")
+
+                # when reading the first update (which is assumed to have the 
+                # latest date), set the current datetime
                 if lines_read == 0:
                     now = date            
 
-                # check if the update is older than 24 hours
-                is_older = now - date > delta
+                # check if the current update is older than 24 hours
+                is_older = now - date > delta                
 
-                # stopping condition:
+                # least_percentage is the least percentage among winner candidates
                 least_percentage = -1000
                 if candidates.len() > 0:
                     least_percentage = get_percentage(candidates[-1])
+
+                # whether all encountered stocks/codes also have a percentage
                 all_accounted_for = prices.keys() == percentages.keys()
+
+                # stopping condition - this is the trickiest to explain:
                 if (
-                    (candidates.len() >= n) and  # we have at least n candidates for winners
-                    (least_percentage >= 0) and  # candidates have increase >= 0
+                    (candidates.len() >= n) and  # we have n candidates (or more)
+                    # (least_percentage >= 0) and  # candidates have last_percentage >= 0
                     all_accounted_for and        # all encountered codes have a percentage calculated
                     (is_older == True)           # the date of the current line is older than 24 hours
                 ):
@@ -186,14 +196,18 @@ def find_winners_alternative(path, n=3):
                 # if the code is encountered for the first time
                 if not code in prices:
 
+                    logging.debug(f"    Encountered for first time")
+
                     prices[code] = price                    
 
                     # if update is older than 24 hours
                     # calculate percentage
-                    if is_older == True:        
+                    if is_older == True:  
+                        logging.debug("    Already older, percentage: 0")      
                         percentages[code] = 0
                         # add it to candidates if it qualifies
                         if (percentages[code] >= least_percentage):
+                            logging.debug("    Inserting into candidates")    
                             candidates.insert(dict(
                                 name=code,
                                 percent=percentages[code],
@@ -202,15 +216,18 @@ def find_winners_alternative(path, n=3):
 
                 # if encountered but the percentage has not been calculated yet
                 # and the current update is older than 24 hours
-                elif (not code in percentages) and (is_older == True):
+                elif (not code in percentages) and (is_older == True):                    
 
                     # calculate percentage
                     last_price = prices[code]
                     change_in_price = last_price - price                    
-                    percentages[code] = 100 * change_in_price / price  
+                    percentages[code] = 100 * change_in_price / price 
+
+                    logging.debug(f"    Percentage: {percentages[code]}") 
 
                     # add it to candidates if it qualifies
                     if percentages[code] >= least_percentage:
+                        logging.debug("    Inserting into candidates")
                         candidates.insert(dict(
                             name=code,
                             percent=percentages[code],

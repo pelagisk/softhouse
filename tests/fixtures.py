@@ -55,8 +55,8 @@ def twoline_expected_output():
     """Creates the expected output data in the twoline case"""
     return {
         "winners": [
-            {'rank': 1, 'name': 'ABB', 'percent': 0, 'latest': 217}, 
-            {'rank': 2, 'name': 'NCC', 'percent': 0, 'latest': 122}, 
+            {"rank": 1, "name": "ABB", "percent": 0, "latest": 217}, 
+            {"rank": 2, "name": "NCC", "percent": 0, "latest": 122}, 
         ],
     } 
 
@@ -103,22 +103,22 @@ def multiline_expected_output():
     """Creates the expected output data in the multiline case"""
     return {
         "winners": [
-            {'rank': 1, 'name': 'AddLife B', 'percent': 40.74, 'latest': 38}, 
-            {'rank': 2, 'name': 'NCC', 'percent': 1.68, 'latest': 121}, 
-            {'rank': 3, 'name': 'ABB', 'percent': 1.37, 'latest': 222},
+            {"rank": 1, "name": "AddLife B", "percent": 40.74, "latest": 38}, 
+            {"rank": 2, "name": "NCC", "percent": 1.68, "latest": 121}, 
+            {"rank": 3, "name": "ABB", "percent": 1.37, "latest": 222},
         ],
     } 
 
 
 def assert_output_equal(actual, expected, rel_tol=1e-9):
-    """Asserts that the output dict 'actual' is equal to 'expected' up to rel_tol."""
+    """Asserts that the output dict "actual" is equal to "expected" up to rel_tol."""
     assert(actual.keys() == expected.keys())    
     for test_stock, expected_stock in zip(actual["winners"], expected["winners"]):        
         assert(test_stock.keys() == expected_stock.keys())
-        for key in ['rank', 'name']:
+        for key in ["rank", "name"]:
             assert(test_stock[key] == expected_stock[key])
         # float almost-equality
-        assert(isclose(test_stock['percent'], expected_stock['percent'], rel_tol=rel_tol))
+        assert(isclose(test_stock["percent"], expected_stock["percent"], rel_tol=rel_tol))
 
 
 @pytest.fixture()

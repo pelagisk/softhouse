@@ -18,7 +18,8 @@ def generate_input(n_days=100, prob=0.8, stocks=["NCC", "ABB", "AddLife B", "SSA
             if random() < prob:                      
                 price = int(10 + 1000 * random())
                 updates.append([date.strftime(DATE_FORMAT), code, price])
-                date += timedelta(days=day_index, seconds=(60 * random()))              
+                date += timedelta(days=0, seconds=(60 * random()))     
+        date += timedelta(days=1)         
     df = pd.DataFrame(updates)    
     df.to_csv(PATH_TO_INPUT, sep=";", header=["Date", "Kod", "Kurs"], index=False)
     return len(updates)
