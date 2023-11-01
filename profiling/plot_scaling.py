@@ -62,4 +62,5 @@ ax.errorbar(n_avg_list, alternative_avg_list, yerr=pandas_std_list, fmt=".-r", l
 ax.set_xlabel("File size")
 ax.set_ylabel("Time in seconds")
 ax.legend()
+fig.savefig("profiling/scaling.png")
 plt.show()

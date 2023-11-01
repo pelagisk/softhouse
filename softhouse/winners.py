@@ -55,15 +55,22 @@ def find_winners_pandas(path, n=3):
         updates_before = updates[now - updates.date > delta]
 
         logging.debug(f"# updates for stock: {len(updates)}")
-        logging.debug(f"# updates for stock before 24 hours: {len(updates_before)}")    
+        logging.debug(
+            f"# updates for stock before 24 hours: {len(updates_before)}"
+        )    
 
-        # does the input file contain information about a possible change in stock price?
+        # does the input file contain information about a possible change in 
+        # stock price?
         if (
-            (len(updates) == 1) or                 # not if there is only a single update about the stock
-            (len(updates_before) == 0) or          # not if there is no updates before last 24 hours
-            (len(updates_before) == len(updates))  # not if there is no updates during last 24 hours
+            # not if there is only a single update about the stock
+            (len(updates) == 1) or      
+            # not if there is no updates before last 24 hours           
+            (len(updates_before) == 0) or         
+            # not if there is no updates during last 24 hours 
+            (len(updates_before) == len(updates))  
         ):
-            # then the stock is assumed to be constant in price during last 24 hours
+            # then the stock is assumed to be constant in price during last 24 
+            # hours
             percentages = 0.0  
         else:  # otherwise, calculate the change
             old_price = updates_before.price.iloc[-1]
@@ -88,7 +95,10 @@ def find_winners_pandas(path, n=3):
 
 
 def parse_line(line):
-    """Parses a line of formmat 'date;code;price' where is of format DATE_FORMAT"""
+    """
+    Parses a line of formmat 'date;code;price' where is of format 
+    DATE_FORMAT.
+    """
     date_string, code, price_string = line.split(";")
     date = date_converter(date_string)
     price = int(price_string)
@@ -164,8 +174,7 @@ def find_winners_alternative(path, n=3):
             # try to parse the line into an update (date, code, price)
             try:                 
                 date, code, price = parse_line(line)
-
-            # this case occurs when parse_line fails
+            # continue with next line if this line cannot be parsed
             except ValueError:
                 break
 
@@ -182,11 +191,26 @@ def find_winners_alternative(path, n=3):
             # whether all encountered stocks/codes also have a percentage
             all_accounted_for = prices.keys() == percentages.keys()
 
-            # stopping condition - this is the trickiest to explain:
+            # find the minimum percentage among candidates
+            min_percentage = -100
+            if candidates.len() > 0:
+                min_percentage = get_percentage(candidates[-1])
+
+            # stopping condition, the crucial speed-improvement of this 
+            # algorithm:
+            # we can stop if these are true, since we are now in the file when 
+            # all updates are older than 24 hours. So any unencountered stocks 
+            # will have 0% increase. Hence they cannot be better candidates if
+            # all three have at least 0% increase.
             if (
-                (candidates.len() >= n) and  # we have n candidates (or more)
-                all_accounted_for and        # all encountered codes have a percentage calculated
-                (is_older == True)           # the date of the current line is older than 24 hours
+                # we have n candidates (or more)
+                (candidates.len() >= n) and  
+                # all encountered codes have a percentage calculated
+                all_accounted_for and   
+                # all candidates have at least 0% increase     
+                # (min_percentage >= 0) and    
+                # the date of the current line is older than 24 hours
+                (is_older == True)           
             ):
                 break
 
