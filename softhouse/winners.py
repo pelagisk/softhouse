@@ -163,82 +163,75 @@ def find_winners_alternative(path, n=3):
 
             # try to parse line
             try: 
-
                 # convert the line into an update (date, code, price)
                 date, code, price = parse_line(line)
 
-                logging.debug(f"Line {lines_read}: {date}, {code}, {price}")
+            # this case occurs when parse_line fails
+            except ValueError:
+                break
 
-                # when reading the first update (which is assumed to have the 
-                # latest date), set the current datetime
-                if lines_read == 0:
-                    now = date            
+            logging.debug(f"Line {lines_read}: {date}, {code}, {price}")
 
-                # check if the current update is older than 24 hours
-                is_older = now - date > delta                
+            # when reading the first update (which is assumed to have the 
+            # latest date), set the current datetime
+            if lines_read == 0:
+                now = date            
 
-                # least_percentage is the least percentage among winner candidates
-                least_percentage = -1000
-                if candidates.len() > 0:
-                    least_percentage = get_percentage(candidates[-1])
+            # check if the current update is older than 24 hours
+            is_older = now - date > delta                
 
-                # whether all encountered stocks/codes also have a percentage
-                all_accounted_for = prices.keys() == percentages.keys()
+            # whether all encountered stocks/codes also have a percentage
+            all_accounted_for = prices.keys() == percentages.keys()
 
-                # stopping condition - this is the trickiest to explain:
-                if (
-                    (candidates.len() >= n) and  # we have n candidates (or more)
-                    # (least_percentage >= 0) and  # candidates have last_percentage >= 0
-                    all_accounted_for and        # all encountered codes have a percentage calculated
-                    (is_older == True)           # the date of the current line is older than 24 hours
-                ):
-                    break
+            # stopping condition - this is the trickiest to explain:
+            if (
+                (candidates.len() >= n) and  # we have n candidates (or more)
+                all_accounted_for and        # all encountered codes have a percentage calculated
+                (is_older == True)           # the date of the current line is older than 24 hours
+            ):
+                break
 
-                # if the code is encountered for the first time
-                if not code in prices:
+            # if the code is encountered for the first time
+            if not code in prices:
 
-                    logging.debug(f"    Encountered for first time")
+                logging.debug(f"    Encountered for first time")
 
-                    prices[code] = price                    
+                prices[code] = price                    
 
-                    # if update is older than 24 hours
-                    # calculate percentage
-                    if is_older == True:  
-                        logging.debug("    Already older, percentage: 0")      
-                        percentages[code] = 0
-
-                        # add it to candidates if it qualifies
-                        logging.debug("    Attempting to insert into candidates")    
-                        candidates.insert(dict(
-                            name=code,
-                            percent=percentages[code],
-                            latest=prices[code],
-                        ))                             
-
-                # if encountered but the percentage has not been calculated yet
-                # and the current update is older than 24 hours
-                elif (not code in percentages) and (is_older == True):                    
-
-                    # calculate percentage
-                    last_price = prices[code]
-                    change_in_price = last_price - price                    
-                    percentages[code] = 100 * change_in_price / price 
-
-                    logging.debug(f"    Percentage: {percentages[code]}") 
+                # if update is older than 24 hours
+                # calculate percentage
+                if is_older == True:  
+                    logging.debug("    Already older, percentage: 0")      
+                    percentages[code] = 0
 
                     # add it to candidates if it qualifies
-                    logging.debug("    Attempting to insert into candidates") 
+                    logging.debug("    Attempting to insert into candidates")    
                     candidates.insert(dict(
                         name=code,
                         percent=percentages[code],
                         latest=prices[code],
-                    ))   
+                    ))                             
 
-                lines_read += 1
+            # if encountered but the percentage has not been calculated yet
+            # and the current update is older than 24 hours
+            elif (not code in percentages) and (is_older == True):                    
 
-            # this case occurs when parse_line fails
-            except ValueError:
-                pass
+                # calculate percentage
+                last_price = prices[code]
+                change_in_price = last_price - price                    
+                percentages[code] = 100 * change_in_price / price 
+
+                logging.debug(f"    Percentage: {percentages[code]}") 
+
+                # add it to candidates if it qualifies
+                logging.debug("    Attempting to insert into candidates") 
+                candidates.insert(dict(
+                    name=code,
+                    percent=percentages[code],
+                    latest=prices[code],
+                ))   
+
+            lines_read += 1
 
     # return in the specified format
     winners = []

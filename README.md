@@ -33,7 +33,7 @@
 
 - [x] Non-deterministic tests
 - [ ] Improved logging
-- [ ] Refactor - write try/except of alternative method with fewer indents
+- [x] Refactor - write try/except of alternative method with fewer indents
 
 # Installation
 
