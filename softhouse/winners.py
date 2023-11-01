@@ -105,38 +105,6 @@ def parse_line(line):
     return date, code, price
 
 
-class SortedList:
-    """
-    An object representing a list of length n, sorted in descending order.
-    """
-
-    def __init__(self, n, key):
-        self.n = n
-        self.key = key  # key function, like `sorted(..., key=key)` for a list
-        self._list = []
-
-    def len(self):
-        return len(self._list)
-    
-    def __getitem__(self, key):
-        return self._list[key]
-
-    def insert(self, element):
-
-        k = self.key(element)
-        for (i, e) in enumerate(reversed(self._list)):
-            if k <= self.key(e): 
-                index = self.len() - i
-                self._list.insert(index, element)
-                # self._list = self._list[0:self.n]
-                return 
-        self._list.insert(0, element)
-        # self._list = self._list[0:self.n]
-
-    def __str__(self):
-        return str(self._list)
-
-
 def find_winners_alternative(path, n=3, assume_update_every_day=False):
     """
     Alternative method of finding winners. Reads file backwards and only
@@ -156,7 +124,7 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
     get_percentage = lambda update: update['percent']
 
     # create the candidates as a custom sorted list of max length n
-    candidates = SortedList(n=n, key=get_percentage)    
+    candidates = []
 
     # read file from last line backwards:
 
@@ -196,7 +164,7 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
             # the percentage of candidate n in the candidate list
             # (this will be a minimum percentage for the top three)
             min_percentage = -100
-            if candidates.len() > n:
+            if len(candidates) > n:  # if candidates.len() > n:
                 min_percentage = get_percentage(candidates[n-1])
 
             # stopping conditions, the crucial speed-improvement of this 
@@ -209,7 +177,7 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
             # read all lines!
             if (
                 # we have n candidates (or more)
-                (candidates.len() >= n) and  
+                (len(candidates) >= n) and  
                 # all encountered codes have a percentage calculated
                 all_accounted_for and   
                 # all candidates have at least 0% increase     
@@ -225,7 +193,7 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
             if (
                 (assume_update_every_day == True) and                
                 # we have n candidates (or more)
-                (candidates.len() >= n) and  
+                (len(candidates) >= n) and  
                 # all encountered codes have a percentage calculated
                 all_accounted_for and    
                 # the date of the current line is older than 24 hours
@@ -247,12 +215,13 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
                     percentages[code] = 0
 
                     # add it to candidates if it qualifies
-                    logging.debug("    Attempting to insert into candidates")    
-                    candidates.insert(dict(
+                    logging.debug("    Attempting to insert into candidates")                        
+                    candidates.apend(dict(
                         name=code,
                         percent=percentages[code],
                         latest=prices[code],
                     ))  
+                    candidates.sort(key=get_percentage, reverse=True)
                     logging.debug("\n".join([
                         f"        {c['name']}: {c['percent']}"
                         for c in candidates
@@ -271,11 +240,12 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
 
                 # add it to candidates if it qualifies
                 logging.debug("    Attempting to insert into candidates") 
-                candidates.insert(dict(
+                candidates.append(dict(
                     name=code,
                     percent=percentages[code],
                     latest=prices[code],
                 ))   
+                candidates.sort(key=get_percentage, reverse=True)
                 logging.debug("\n".join([
                     f"        {c['name']}: {c['percent']}"
                     for c in candidates
