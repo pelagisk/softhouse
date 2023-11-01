@@ -16,55 +16,61 @@ scaling of the two methods: pandas or alternative.
 """
 
 timeit_iterations = 10
-avg_iterations = 10
+avg_iterations = 100
 
 fig, ax = plt.subplots()
 
-for prob in [1.0]:
+n_list = [2**n for n in range(4, 10)]
 
-    n_list = [2**n for n in range(4, 10)]
+n_avg = np.zeros(len(n_list))
+pandas_avg = np.zeros(len(n_list))
+pandas_std = np.zeros(len(n_list)) 
+alternative_avg = np.zeros(len(n_list))
+alternative_std = np.zeros(len(n_list)) 
+alternative2_avg = np.zeros(len(n_list))
+alternative2_std = np.zeros(len(n_list)) 
 
-    n_avg_list = []
-    pandas_avg_list = []
-    pandas_std_list = []
-    alternative_avg_list = []
-    alternative_std_list = []
+for (i, n) in enumerate(n_list):
 
-    for n in n_list:
+    # take the average over several generated input files
+    ns = np.zeros(avg_iterations)
+    pts = np.zeros(avg_iterations)
+    ats = np.zeros(avg_iterations)
+    a2ts = np.zeros(avg_iterations)
 
-        # take the average over several generated input files
-        nrl = []
-        pel = []
-        ael = []    
-        for i in range(avg_iterations):        
-            n_rows = generate_input(n_days=n, prob=prob)
-            # take the average over several runs
-            tp = timeit("find_winners_pandas(PATH_TO_INPUT)", 
-                number=timeit_iterations, globals=globals())
-            ta = timeit(
-                "find_winners_alternative(PATH_TO_INPUT, assume_update_every_day=True)", 
-                number=timeit_iterations, globals=globals())                
-            nrl.append(n_rows)
-            pel.append(tp)
-            ael.append(ta)
-        
-        n_avg_list.append(np.average(nrl))
-        pandas_avg_list.append(np.average(pel))
-        pandas_std_list.append(np.std(pel))
-        alternative_avg_list.append(np.average(ael))
-        alternative_std_list.append(np.std(ael))
-        
-    # delete input file
-    os.remove(PATH_TO_INPUT)
+    for j in range(avg_iterations):        
+        ns[j] = generate_input(n_days=n, prob=1.0)
+        # take the average over several runs
+        pts[j] = timeit("find_winners_pandas(PATH_TO_INPUT)", 
+            number=timeit_iterations, globals=globals())
+        ats[j] = timeit(
+            "find_winners_alternative(PATH_TO_INPUT, assume_update_every_day=False)", 
+            number=timeit_iterations, globals=globals())                
+        a2ts[j] = timeit(
+            "find_winners_alternative(PATH_TO_INPUT, assume_update_every_day=True)", 
+            number=timeit_iterations, globals=globals()) 
+    
+    n_avg[i] = np.average(ns)
+    pandas_avg[i] = np.average(pts)
+    pandas_std[i] = np.std(pts)
+    alternative_avg[i] = np.average(ats)
+    alternative_std[i] = np.std(ats)
+    alternative2_avg[i] = np.average(a2ts)
+    alternative2_std[i] = np.std(a2ts)
+    
+# delete input file
+os.remove(PATH_TO_INPUT)
 
 # plot results
-    ax.errorbar(n_avg_list, pandas_avg_list, yerr=pandas_std_list, 
-        fmt=".-", label=f"Pandas, p = {prob:.1f}")
-    ax.errorbar(n_avg_list, alternative_avg_list, yerr=pandas_std_list, 
-        fmt=".-", label=f"Alternative, p = {prob:.1f}")
+ax.errorbar(n_avg, pandas_avg, yerr=pandas_std, 
+    fmt=".-", label=f"Pandas")
+ax.errorbar(n_avg, alternative_avg, yerr=alternative_std, 
+    fmt=".-", label=f"Alternative")
+ax.errorbar(n_avg, alternative2_avg, yerr=alternative2_std, 
+    fmt=".-", label=f"Alternative, assuming updates every day")
 
-ax.set_xlabel("File size")
-ax.set_ylabel("Time in seconds")
+ax.set_xlabel("Average number of lines in input file")
+ax.set_ylabel("Average runtime in seconds")
 ax.legend()
 fig.savefig("profiling/scaling.png")
 plt.show()
