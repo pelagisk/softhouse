@@ -3,7 +3,7 @@ from cProfile import Profile
 from pstats import SortKey, Stats
 
 from softhouse.config import PATH_TO_INPUT
-from softhouse.winners import find_winners_brute_force
+from softhouse.winners import find_winners_pandas
 
 from profiling.generate import generate_input
 
@@ -13,7 +13,7 @@ generate_input(n_days=500)
 
 with Profile() as profile:
 
-    find_winners_brute_force(PATH_TO_INPUT)
+    find_winners_pandas(PATH_TO_INPUT)
     (
         Stats(profile)
         .sort_stats(SortKey.TIME)

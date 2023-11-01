@@ -10,8 +10,8 @@ def date_converter(s: str):
     return datetime.strptime(s, DATE_FORMAT)
 
 
-def find_winners_brute_force(path, n=3):
-    """A brute force solution to finding the best stocks"""
+def find_winners_pandas(path, n=3):
+    """A solution using Pandas to finding the best stocks"""
 
     try:
         all_updates = pd.read_csv(path, 
@@ -97,7 +97,8 @@ def parse_line(line):
 
 class SortedLimitedList:
     """
-    An object representing a list of length n, sorted in descending order.    
+    An object representing a list of length n, sorted in descending order.
+    Supposed to always hold a maximum of n elements!
     """
 
     def __init__(self, n, key):
@@ -205,14 +206,14 @@ def find_winners_alternative(path, n=3):
                     if is_older == True:  
                         logging.debug("    Already older, percentage: 0")      
                         percentages[code] = 0
+
                         # add it to candidates if it qualifies
-                        if (percentages[code] >= least_percentage):
-                            logging.debug("    Inserting into candidates")    
-                            candidates.insert(dict(
-                                name=code,
-                                percent=percentages[code],
-                                latest=prices[code],
-                            ))                             
+                        logging.debug("    Attempting to insert into candidates")    
+                        candidates.insert(dict(
+                            name=code,
+                            percent=percentages[code],
+                            latest=prices[code],
+                        ))                             
 
                 # if encountered but the percentage has not been calculated yet
                 # and the current update is older than 24 hours
@@ -226,13 +227,12 @@ def find_winners_alternative(path, n=3):
                     logging.debug(f"    Percentage: {percentages[code]}") 
 
                     # add it to candidates if it qualifies
-                    if percentages[code] >= least_percentage:
-                        logging.debug("    Inserting into candidates")
-                        candidates.insert(dict(
-                            name=code,
-                            percent=percentages[code],
-                            latest=prices[code],
-                        ))   
+                    logging.debug("    Attempting to insert into candidates") 
+                    candidates.insert(dict(
+                        name=code,
+                        percent=percentages[code],
+                        latest=prices[code],
+                    ))   
 
                 lines_read += 1
 

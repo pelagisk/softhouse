@@ -4,7 +4,7 @@ import datetime
 import logging 
 
 from .config import PATH_TO_INPUT, MODE, LOG_FILENAME
-from .winners import find_winners_brute_force
+from .winners import find_winners_pandas
 from .watch import create_observer
 
 
@@ -15,7 +15,7 @@ def update_winners():
     """
     logging.debug("Updating winners")
     global winners    
-    winners = find_winners_brute_force(PATH_TO_INPUT)    
+    winners = find_winners_pandas(PATH_TO_INPUT)    
 
 
 # lifespan of FastAPI app is the following
