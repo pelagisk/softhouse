@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 import logging
 import pandas as pd
@@ -116,6 +117,10 @@ def find_winners_python(path, n=3, max_lines=None, stocks=None):
     If a list of all stocks is provided, the code will know when all stocks have 
     been checked. In that case, this algorithm runs faster.
     """
+
+    if not os.path.exists(path):
+        logging.warning("Input file not found: returning empty data!")
+        return {"winners": []}
 
     # timedelta representing last 24 hours        
     delta = timedelta(days=1)    

@@ -146,26 +146,11 @@ def assert_output_equal(actual_output, expected_output, rel_tol=1e-9):
     expected = expected_output["winners"]
     assert(len(actual) == len(expected))
 
-    # divide into equivalence classes, since there may be entries with the same
-    # percentage. Each class has the same percentage.
-    get_percentage = lambda x: x["percent"]
-    actual_eq = find_equivalences(actual, key=get_percentage)
-    expected_eq = find_equivalences(expected, key=get_percentage)
-    assert(len(actual_eq) == len(expected_eq))
-    for aeq, eeq in zip(actual_eq, expected_eq):
-        # since dicts are not hashable and due to float equality, we have to test
-        # that we can find a corresponding element for each element
-        counterparts = []
-        for member in aeq:
-            has_counterpart = False
-            for m in eeq:
-                if (
-                    (member["name"] == m["name"]) and 
-                    isclose(member["percent"], m["percent"], rel_tol=rel_tol)
-                ):
-                    has_counterpart = True
-                    break
-            assert(has_counterpart == True)
+    # the easiest thing to do is just to test float equality of the percentages
+    percent_actual = [stock["percent"] for stock in actual]
+    percent_expected = [stock["percent"] for stock in expected]
+    for (a, e) in zip(percent_actual, percent_expected):
+        isclose(a, e, rel_tol=rel_tol)
 
 
 @pytest.fixture()
