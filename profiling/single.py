@@ -17,13 +17,13 @@ logging.basicConfig(
     format='%(message)s'
 )
 
-# n = 100
-# n_rows = generate_input(n_days=n, prob=0.9)
-# print(f"n_rows: {n_rows}")
+n = 100
+n_rows = generate_input(n_days=n, prob=0.9)
+print(f"n_rows: {n_rows}")
 
 stocks = ["NCC", "ABB", "AddLife B", "8TRA", "SSAB"]
 res = find_winners_python(PATH_TO_INPUT)
 print(res["winners"])
 
 # delete input file
-# os.remove(PATH_TO_INPUT)
+os.remove(PATH_TO_INPUT)

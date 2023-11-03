@@ -16,7 +16,7 @@ scaling of the two methods: pandas or python.
 """
 
 timeit_iterations = 10
-avg_iterations = 10
+avg_iterations = 100
 
 fig, ax = plt.subplots()
 
@@ -47,7 +47,10 @@ for (i, n) in enumerate(n_list):
             "find_winners_python(PATH_TO_INPUT)", 
             number=timeit_iterations, globals=globals())                
         pa_ts[j] = timeit(
-            "find_winners_python(PATH_TO_INPUT, stocks=['NCC', 'ABB', 'AddLife B', '8TRA', 'SSAB'])", 
+            (
+                "find_winners_python(PATH_TO_INPUT, "
+                "stocks=['NCC', 'ABB', 'AddLife B', '8TRA', 'SSAB'])"
+            ), 
             number=timeit_iterations, globals=globals()) 
     
     n_avg[i] = np.average(ns)

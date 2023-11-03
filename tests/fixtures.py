@@ -165,15 +165,7 @@ def assert_output_equal(actual_output, expected_output, rel_tol=1e-9):
                 ):
                     has_counterpart = True
                     break
-            assert(has_counterpart == True)            
-
-    # for stock, expected_stock in zip(actual["winners"], expected["winners"]):        
-    #     assert(stock.keys() == expected_stock.keys())
-    #     for key in ["rank", "name"]:
-    #         assert(stock[key] == expected_stock[key])
-    #     # float almost-equality
-    #     assert(isclose(stock["percent"], expected_stock["percent"], 
-    #         rel_tol=rel_tol))
+            assert(has_counterpart == True)
 
 
 @pytest.fixture()

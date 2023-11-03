@@ -21,4 +21,4 @@ with Profile() as profile:
     )
 
 # delete input file
-# os.remove(PATH_TO_INPUT)
+os.remove(PATH_TO_INPUT)
