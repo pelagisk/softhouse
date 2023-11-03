@@ -4,7 +4,7 @@ import pytest
 
 from tests.generate import random_input
 
-from softhouse.config import PATH_TO_INPUT, DATE_FORMAT
+from softhouse.config import DATE_FORMAT, PATH_TO_INPUT
 from softhouse.api import update_winners
 from softhouse.watch import create_observer
 from softhouse.winners import find_winners_pandas, find_winners_python

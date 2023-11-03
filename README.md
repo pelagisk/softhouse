@@ -10,6 +10,9 @@ python -m pip install -r requirements.txt
 
 All commands below are assumed to be run inside this virtualenv. 
 
+Note: developed with Python 3.8 for compatibility. It seems to work also for 
+Python 3.11.
+
 
 # Usage
 

@@ -3,8 +3,7 @@ from random import random, randint
 import pandas as pd
 
 
-from softhouse.config import PATH_TO_INPUT, DATE_FORMAT
-
+from softhouse.config import DATE_FORMAT, PATH_TO_INPUT
 
 
 def random_input(n_days=10, n_updates_max=10, prob=1.0, stocks=["ABB", "NCC"]):

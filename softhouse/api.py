@@ -15,7 +15,9 @@ def update_winners():
     """
     logging.debug("Updating winners")
     global winners    
-    winners = find_winners_pandas(PATH_TO_INPUT)    
+    # winners = find_winners_pandas(PATH_TO_INPUT)    
+    winners = find_winners_python(PATH_TO_INPUT, 
+        stocks=["NCC", "ABB", "AddLife B", "8TRA", "SSAB"]) 
 
 
 # lifespan of FastAPI app is the following
