@@ -3,8 +3,8 @@ from fastapi import FastAPI
 import datetime
 import logging 
 
-from .config import PATH_TO_INPUT, MODE, LOG_FILENAME
-from .winners import find_winners_pandas
+from .config import PATH_TO_INPUT, MODE, LOG_FILENAME, STOCKS
+from .winners import find_winners_python
 from .watch import create_observer
 
 
@@ -16,8 +16,7 @@ def update_winners():
     logging.debug("Updating winners")
     global winners    
     # winners = find_winners_pandas(PATH_TO_INPUT)    
-    winners = find_winners_python(PATH_TO_INPUT, 
-        stocks=["NCC", "ABB", "AddLife B", "8TRA", "SSAB"]) 
+    winners = find_winners_python(PATH_TO_INPUT, stocks=STOCKS) 
 
 
 # lifespan of FastAPI app is the following
