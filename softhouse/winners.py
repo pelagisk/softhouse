@@ -219,7 +219,7 @@ def find_winners_python(path, n=3, max_lines=None, stocks=None):
                     percentages[code] = 0
 
                     # add it to candidates if it qualifies
-                    logging.debug("    Attempting to insert into candidates")                        
+                    logging.debug("    Adding to candidates")                        
                     candidates.append(dict(
                         name=code,
                         percent=percentages[code],
@@ -243,7 +243,7 @@ def find_winners_python(path, n=3, max_lines=None, stocks=None):
                 logging.debug(f"    Percentage: {percentages[code]}") 
 
                 # add it to candidates if it qualifies
-                logging.debug("    Attempting to insert into candidates") 
+                logging.debug("    Adding to candidates") 
                 candidates.append(dict(
                     name=code,
                     percent=percentages[code],
@@ -266,7 +266,7 @@ def find_winners_python(path, n=3, max_lines=None, stocks=None):
                 "percentage: 0") 
             percentages[code] = 0.0
 
-            logging.debug("    Attempting to insert into candidates") 
+            logging.debug("    Adding to candidates") 
             candidates.append(dict(
                 name=code,
                 percent=percentages[code],
