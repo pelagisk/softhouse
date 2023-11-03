@@ -11,7 +11,7 @@ from profiling.generate import generate_input
 
 
 """
-Uses timeit and averaging over several generated input files to investigate the 
+Uses timeit and averaging over several generated input files to benchmark the 
 scaling of the two methods: pandas or python.
 """
 
