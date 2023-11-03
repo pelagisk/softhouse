@@ -105,16 +105,16 @@ def parse_line(line):
     return date, code, price
 
 
-def find_winners_alternative(path, n=3, assume_update_every_day=False):
+def find_winners_python(path, n=3, max_lines=None, stocks=None):
     """
     Alternative method of finding winners. Reads file backwards and only
     continues as far as it has to. 
 
-    Should scale with number of updates/day, not number of rows in file.
-    Which solution to use depends on the case!
+    This method is faster if there are n stocks with increase >= 0% during the
+    day. Only then does it not have to read the entire file.
 
-    If it can be assumed that all stocks update every day, we never have to 
-    search the entire file and the algorithm runs significantly faster.
+    If a list of all stocks is provided, the code will know when all stocks have 
+    been checked. In that case, this algorithm runs faster.
     """
 
     # timedelta representing last 24 hours        
@@ -126,6 +126,10 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
     # create the candidates as a custom sorted list of max length n
     candidates = []
 
+    # if a list of stocks is provided, it can be used as a stopping criterion
+    if stocks is not None:
+        stocks = set(stocks)
+
     # read file from last line backwards:
 
     lines_read = 0
@@ -136,9 +140,13 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
 
         while True:
 
+            # if `max_lines` is set, cap the number of lines read
+            if (max_lines is not None) and lines_read >= max_lines:
+                break
+
             # read lines until EOF (beginning of file :) )
             line = frb.readline()    
-            if not line:
+            if not line:                
                 break
 
             # try to parse the line into an update (date, code, price)
@@ -155,8 +163,10 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
             if lines_read == 0:
                 now = date            
 
-            # check if the current update is older than 24 hours
-            is_older = now - date > delta                
+            # check if the current update is made within a day from current time
+            within_a_day = now - date <= delta                
+            # within two days
+            within_two_days = now - date <= 2*delta
 
             # whether all encountered stocks/codes also have a percentage
             all_accounted_for = prices.keys() == percentages.keys()
@@ -167,39 +177,33 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
             if len(candidates) > n:  # if candidates.len() > n:
                 min_percentage = get_percentage(candidates[n-1])
 
-            # stopping conditions, the crucial speed-improvement of this 
-            # algorithm:
-            # We can stop if these are true, since we are now in the file when 
-            # all updates are older than 24 hours. So any unencountered stocks 
-            # will have 0% increase. Hence we cannot find any better candidates 
-            # if the top n candidates have at least 0% increase.
-            # If the top n candidates have < 0% increase, the code will have to
-            # read all lines!
+            # if a set of stocks are provided and if we have calculated 
+            # percentages for all stocks, we are done
+            if (stocks is not None) and (percentages.keys() == stocks):
+                logging.debug(
+                    "All provided stocks have been checked. Breaking!")
+                break
+
+            # If the current update is older than 24 hours, any unencountered 
+            # stocks will have 0% increase. In the case that the top n 
+            # candidates have at least 0% increase, we cannot improve this score
+            # and we can break
             if (
+                # the date of the current line is older than 24 hours
+                (within_a_day == False) and
                 # we have n candidates (or more)
                 (len(candidates) >= n) and  
                 # all encountered codes have a percentage calculated
                 all_accounted_for and   
                 # all candidates have at least 0% increase     
-                (min_percentage >= 0) and    
-                # the date of the current line is older than 24 hours
-                (is_older == True)           
+                (min_percentage >= 0)                            
             ):
-                break
-            # If it can be assumed that all stocks update every day
-            # it is enough to assume that we have accounted for all stocks!
-            # The algorithm can then stop even if <0% increase since no new
-            # stocks can show up in the list
-            if (
-                (assume_update_every_day == True) and                
-                # we have n candidates (or more)
-                (len(candidates) >= n) and  
-                # all encountered codes have a percentage calculated
-                all_accounted_for and    
-                # the date of the current line is older than 24 hours
-                (is_older == True) 
-            ):                
-                break
+                logging.debug(
+                    f"Top {n} candidates have percentage" 
+                    f" {min_percentage:0.2f} > 0, and further updates cannot "
+                    f"improve this score. Breaking!"
+                )
+                break                  
 
             # if the code is encountered for the first time
             if not code in prices:
@@ -210,13 +214,13 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
 
                 # if update is older than 24 hours
                 # calculate percentage
-                if is_older == True:  
+                if within_a_day == False:  
                     logging.debug("    Already older, percentage: 0")      
                     percentages[code] = 0
 
                     # add it to candidates if it qualifies
                     logging.debug("    Attempting to insert into candidates")                        
-                    candidates.apend(dict(
+                    candidates.append(dict(
                         name=code,
                         percent=percentages[code],
                         latest=prices[code],
@@ -229,7 +233,7 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
                                      
             # if encountered but the percentage has not been calculated yet
             # and the current update is older than 24 hours
-            elif (not code in percentages) and (is_older == True):                    
+            elif (not code in percentages) and (within_a_day == False):                    
 
                 # calculate percentage
                 last_price = prices[code]
@@ -253,6 +257,27 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
 
             lines_read += 1
 
+    # set the percentage to 0 for all encountered stocks where percentage has 
+    # not been calculated
+    for code in prices:
+        if not code in percentages:
+            logging.debug(
+                "    Adding remaining candidates, assumed to have "
+                "percentage: 0") 
+            percentages[code] = 0.0
+
+            logging.debug("    Attempting to insert into candidates") 
+            candidates.append(dict(
+                name=code,
+                percent=percentages[code],
+                latest=prices[code],
+            ))   
+            candidates.sort(key=get_percentage, reverse=True)
+            logging.debug("\n".join([
+                f"        {c['name']}: {c['percent']}"
+                for c in candidates
+            ]))                
+
     # return in the specified format
     winners = []
     for i, candidate in enumerate(candidates[0:n]):
@@ -262,4 +287,5 @@ def find_winners_alternative(path, n=3, assume_update_every_day=False):
             "percent": round(candidate["percent"], 2), 
             "latest": candidate["latest"],
         })
+
     return {"winners": winners}
