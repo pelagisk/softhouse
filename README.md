@@ -44,5 +44,5 @@ python profiling/run.py > profiling/profile.txt
 We can compare the two solution methods by running
 
 ```bash
-python profiling/plot_scaling.py
+python profiling/benchmark.py
 ```
